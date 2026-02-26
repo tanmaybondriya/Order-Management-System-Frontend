@@ -41,36 +41,38 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="">
+      <div className="bg-gray-800 text-white flex flex-col justify-between">
+        <h2 className="text-bold">Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            onChange={handleChange}
+            required
+          />
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-          required
-        />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            onChange={handleChange}
+            required
+          />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          onChange={handleChange}
-          required
-        />
-
-        <button type="submit">Login</button>
-        <button
-          onClick={() => {
-            logout();
-            navigate("/register");
-          }}
-        >
-          Create new user
-        </button>
-      </form>
+          <button type="submit">Login</button>
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              navigate("/register");
+            }}
+          >
+            Create new user
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

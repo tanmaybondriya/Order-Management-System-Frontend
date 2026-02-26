@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
-import useProductStore from "./product.store";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useOrderStore from "../orders/order.store";
 import { notifyError, notifySuccess } from "../../utils/notify";
+import { fetchProductApi } from "./product.api";
 
 const ProductList = () => {
-  const { products, loading, fetchProducts, decreaseStock } = useProductStore();
+  const queryClient = useQueryClient();
+  // const { fetchProducts, decreaseStock } = useProductStore();
   const { createOrders } = useOrderStore();
   const [quantities, setQuantities] = useState({});
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProductApi,
+  });
+  const products = data?.data?.products || [];
 
   const handleQuantityChange = (productId, value) => {
     setQuantities({
@@ -26,18 +33,15 @@ const ProductList = () => {
         productId: product._id,
         quantity,
       });
-      decreaseStock(product._id, quantity);
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
       notifySuccess("Order placed successfully");
     } catch (error) {
       notifyError(error.response?.data?.message, "Order failed");
     }
   };
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
-  if (loading) return <p>Loading...</p>;
-
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Failed to load products. Please try again</p>;
   return (
     <div>
       <h2 style={{ textAlign: "center" }}>Products</h2>

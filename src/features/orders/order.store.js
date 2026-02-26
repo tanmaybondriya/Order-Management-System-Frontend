@@ -7,10 +7,12 @@ import {
   deleteOrderApi,
 } from "./order.api";
 import { notifyError, notifySuccess } from "../../utils/notify";
+import useProductStore from "../products/product.store";
 
 const useOrderStore = create((set) => ({
   orders: [],
   loading: false,
+  cancellingIds: [],
   fetchOrders: async () => {
     set({ loading: true });
 
@@ -30,20 +32,28 @@ const useOrderStore = create((set) => ({
     return res;
   },
 
-  cancelOrder: async (orderId) => {
-    // const productStore = useProductStore.getState();
-    await cancelOrderApi(orderId);
-    // const increasedstock = productStore.increaseStock(productId, quantity); //
+  cancelOrder: async (order) => {
+    const productStore = useProductStore.getState();
 
     set((state) => ({
-      orders: state.orders.map((orders) =>
-        orders._id === orderId ? { ...orders, status: "CANCELLED" } : orders,
-      ),
+      cancellingIds: [...state.cancellingIds, order._id],
     }));
-    // set ((state)=>({
-    //   orders:state.orders.map(orders)=>
-    //     orders._id===orderId?{...orders,quantity:}
-    // }))
+
+    await cancelOrderApi(order._id);
+    try {
+      set((state) => ({
+        orders: state.orders.map((orderItem) =>
+          orderItem._id === order._id
+            ? { ...orderItem, status: "CANCELLED" }
+            : orderItem,
+        ),
+      }));
+      productStore.increaseStock(order.product._id, order.quantity);
+    } finally {
+      set((state) => ({
+        cancellingIds: state.cancellingIds.filter((id) => id !== order._id),
+      }));
+    }
   },
 
   deleteOrders: async () => {
