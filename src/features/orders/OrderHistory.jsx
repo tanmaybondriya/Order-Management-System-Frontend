@@ -1,21 +1,18 @@
 import { useEffect } from "react";
 import useOrderStore from "./order.store";
 import { notifyError, notifySuccess } from "../../utils/notify";
-import useProductStore from "../products/product.store";
 
 const OrderHistory = () => {
   const { orders, fetchOrders, cancelOrder, deleteOrders } = useOrderStore();
-  const { increaseStock } = useProductStore();
+  const cancellingIds = useOrderStore((state) => state.cancellingIds);
 
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  const handleCancel = async (orderId) => {
-    const order = orders.find((o) => o._id === orderId);
+  const handleCancel = async (order) => {
     try {
-      await cancelOrder(orderId);
-      increaseStock(order.product._id, order.quantity);
+      await cancelOrder(order);
       notifySuccess("Order cancelled successfully");
     } catch (error) {
       notifyError(error.response?.data?.message || "Cancel failed");
@@ -63,11 +60,14 @@ const OrderHistory = () => {
           <p>Status:{order.status}</p>
           {order.status === "PLACED" && (
             <button
+              disabled={cancellingIds.includes(order._id)}
               onClick={() => {
-                handleCancel(order._id);
+                handleCancel(order);
               }}
             >
-              Cancel Order
+              {cancellingIds.includes(order._id)
+                ? "Cancelling..."
+                : "Cancel Order"}
             </button>
           )}
         </div>

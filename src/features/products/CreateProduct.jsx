@@ -1,35 +1,31 @@
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import useProductStore from "./product.store";
 import { notifySuccess, notifyError } from "../../utils/notify";
+const createProductSchema = z.object({
+  name: z.string().min(2, "2 characters required"),
+  price: z.coerce.number().min(1, "min price should be 0"),
+  stock: z.coerce.number().min(0, "Stock cannot be negative"),
+});
 
 const CreateProduct = () => {
   const { createProduct } = useProductStore();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    stock: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createProductSchema),
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     try {
-      await createProduct({
-        ...formData,
-        price: Number(formData.price),
-        stock: Number(formData.stock),
-      });
+      await createProduct(data);
       notifySuccess("Product created Successfully");
-
-      setFormData({ name: "", price: "", stock: "" });
+      reset();
     } catch (error) {
       notifyError(error.response?.data?.message || "Creation failed");
     }
@@ -39,35 +35,32 @@ const CreateProduct = () => {
     <div>
       <h2>Create Product</h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Product Name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input {...register("name")} type="text" placeholder="Product Name" />
+
+        {errors.name && (
+          <p className="text-red-500 text-sm">{errors.name.message}</p>
+        )}
 
         <input
+          {...register("price")}
           type="number"
-          name="price"
-          placeholder="Price"
-          value={formData.price}
-          onChange={handleChange}
-          required
+          placeholder="Enter Product price"
         />
 
-        <input
-          type="number"
-          name="stock"
-          placeholder="Stock"
-          value={formData.stock}
-          onChange={handleChange}
-          required
-        />
+        {errors.price && (
+          <p className="text-red-500 text-sm">{errors.price.message}</p>
+        )}
 
-        <button type="submit">Create</button>
+        <input {...register("stock")} type="number" placeholder="Enter stock" />
+
+        {errors.stock && (
+          <p className="text-red-500 text-sm">{errors.stock.message}</p>
+        )}
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create"}
+        </button>
       </form>
     </div>
   );
