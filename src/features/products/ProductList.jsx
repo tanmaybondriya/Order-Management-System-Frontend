@@ -43,53 +43,46 @@ const ProductList = () => {
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load products. Please try again</p>;
   return (
-    <div>
-      <h2 style={{ textAlign: "center" }}>Products</h2>
-      {products.length === 0 && <p>No products found</p>}
+    <div className="p-6">
+      <h2>Products</h2>
 
-      {products.map((product) => (
-        <div
-          key={product._id}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            style={{
-              border: "1px solid #444",
-              padding: "20px",
-              marginBottom: "20px",
-              width: "300px", // Give it a fixed width so they look uniform
-              borderRadius: "8px",
-              textAlign: "center", // Center text inside the card
-            }}
-          >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.length === 0 && <p>No products found</p>}
+
+        {products.map((product) => (
+          <div className="bg-white rounded-xl shadow-md p-5 flex flex-col gap-3 hover:shadow-lg transition">
             <h3>{product.name}</h3>
-            <p>Price:Rs.{product.price}</p>
-            <p>Stock:{product.stock}</p>
+            <p>Price: Rs.{product.price}</p>
+            <p>
+              <span
+                className={`text-md px-2 py-1 rounded w-fit${product.stock === 0 ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}
+              >
+                Stock: {product.stock}
+              </span>
+            </p>
+            <div className="flex gap-2 items-center mt-2">
+              <input
+                type="number"
+                min="1"
+                max={product.stock}
+                value={quantities[product._id] || 1}
+                onChange={(e) =>
+                  handleQuantityChange(product._id, e.target.value)
+                }
+                className="w-20 border rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-            <input
-              type="number"
-              min="1"
-              max={product.stock}
-              value={quantities[product._id] || 1}
-              onChange={(e) =>
-                handleQuantityChange(product._id, e.target.value)
-              }
-            />
-
-            <button
-              disabled={product.stock === 0}
-              onClick={() => handlePlaceOrder(product)}
-            >
-              {product.stock === 0 ? "Out of Stock" : "Place Order"}
-            </button>
+              <button
+                disabled={product.stock === 0}
+                onClick={() => handlePlaceOrder(product)}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded p-2 font-medium disabled:opacity-50"
+              >
+                {product.stock === 0 ? "Out of Stock" : "Place Order"}
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

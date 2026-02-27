@@ -6,7 +6,7 @@ import ProtectedRoute from "../components/layout/ProtectedRoute";
 import ProductList from "../features/products/ProductList";
 import CreateProduct from "../features/products/CreateProduct";
 import OrderHistory from "../features/orders/OrderHistory";
-import Dashboard from "../features/dashboard/dashboard";
+import Dashboard from "../features/dashboard/Dashboard";
 const Router = () => {
   return (
     <BrowserRouter>
